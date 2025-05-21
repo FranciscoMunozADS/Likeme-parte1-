@@ -50,6 +50,39 @@ app.post('/posts', async (req, res) => {
     }
 });
 
+// Modificar un post con ID | PUT
+
+app.put('/posts/like/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query(
+            'UPDATE posts SET likes = likes +1 WHERE id = $1 RETURNING *', [id]
+        );
+        if (result.rowCount === 0) { // si no se encontró el post con el id, se devuelve error 'Not Found'
+            return res.status(404).send('Post no encontrado');
+        }
+        res.json(result.rows[0]); // devuelve el post actualizado
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al dar like al post");
+    }
+});
+
+// Eliminar un post con ID | DELETE
+
+app.delete('/posts/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query('DELETE FROM posts WHERE id = $1', [id]);
+        if (result.rowCount === 0) {
+            return res.status(404).send('Post no encontrado');
+        }
+        res.status(204).send(); // 204: implica éxito, pero no devuelve contenido (ya que se eliminó el post)
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error al eliminar el post');
+    }
+});
 
 // Iniciar servidor
 
